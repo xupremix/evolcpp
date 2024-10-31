@@ -1,0 +1,10 @@
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+compile_commands.json
+detect_cuda_compute_capabilities.cu
+detect_cuda_version.cc
+evol
+.idea/
+
