@@ -12,6 +12,14 @@
 
 namespace evol {
 
+///
+///
+///
+/// DTYPE
+///
+///
+///
+
 namespace dtype {
 
 #define DEF_DTYPE(name, value)                                                 \
@@ -91,6 +99,37 @@ DEF_DTYPE_IMPL(bits1x8);
 // bool / char
 
 } // namespace dtype
+
+using i8 = dtype::i8;
+using i16 = dtype::i16;
+using i32 = dtype::i32;
+using i64 = dtype::i64;
+
+using u8 = dtype::u8;
+using u16 = dtype::u16;
+using u32 = dtype::u32;
+using u64 = dtype::u64;
+
+using f16 = dtype::f16;
+using f32 = dtype::f32;
+using f64 = dtype::f64;
+
+using byte = dtype::byte;
+
+using c16 = dtype::c16;
+using c32 = dtype::c32;
+using c64 = dtype::c64;
+
+using q8 = dtype::q8;
+using q32 = dtype::q32;
+using q2x4 = dtype::q2x4;
+using q4x2 = dtype::q4x2;
+
+using bits8 = dtype::bits8;
+using bits16 = dtype::bits16;
+using bits2x4 = dtype::bits2x4;
+using bits4x2 = dtype::bits4x2;
+using bits1x8 = dtype::bits1x8;
 
 ///
 /// Devices
@@ -849,7 +888,7 @@ template <typename S, int64_t Height, int64_t Width> struct PadShape {
 ///
 ///
 
-template <typename TShape, typename TType = dtype::f32, typename TDevice = Cpu>
+template <typename TShape, typename TType = f32, typename TDevice = Cpu>
 class Tensor {
 private:
   std::unique_ptr<TType[]> data;
