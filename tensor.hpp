@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <torch/torch.h>
+#include <vector>
 
 namespace tensor {
 
@@ -781,28 +782,21 @@ public:
   static constexpr size_t NELEMS = TShape::NELEMS;
   static constexpr std::array<size_t, DIMS> SHAPE_DIMS = TShape::SHAPE_DIMS;
 
+  torch::Tensor base;
+
   // Constructors
 
-  [[nodiscard]] Tensor() : data(new TType[TShape::NELEMS]) {
-    std::fill(data.get(), data.get() + TShape::NELEMS, TType{});
-  }
-  [[nodiscard]] Tensor(const TType *values) : data(new TType[TShape::NELEMS]) {
-    std::copy(values, values + TShape::NELEMS, data.get());
-  }
-  [[nodiscard]] Tensor(const Tensor &other) : data(new TType[TShape::NELEMS]) {
-    std::copy(other.data.get(), other.data.get() + TShape::NELEMS, data.get());
-  }
-  [[nodiscard]] Tensor(Tensor &&other) noexcept : data(std::move(other.data)) {}
+  // Tensor()
+  //     : base(torch::zeros(std::vector(SHAPE_DIMS.begin(), SHAPE_DIMS.end())))
+  //     {}
+  explicit Tensor(const Tensor &other) : base(other->base) {}
+  explicit Tensor(Tensor &&other) : base(other->base) {}
 
   // Operators
 
-  [[nodiscard]] Tensor &operator=(const Tensor &other) {
-    if (this != &other) {
-      data.reset(new TType[TShape::NELEMS]); // Allocate new memory
-      std::copy(other.data.get(), other.data.get() + TShape::NELEMS,
-                data.get());
-    }
-    return *this;
+  Tensor &operator=(const Tensor &other) {
+    this->base = other.base;
+    return this;
   }
 
   [[nodiscard]] Tensor &operator=(Tensor &&other) noexcept {
