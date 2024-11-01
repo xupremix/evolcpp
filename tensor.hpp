@@ -4,7 +4,6 @@
 #define TENSOR_H
 
 #include <array>
-#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -17,27 +16,27 @@ namespace tensor {
 /// Devices
 ///
 struct Cpu {};
-template <size_t N> struct Cuda {};
-template <size_t N> struct Metal {};
+template <int64_t N> struct Cuda {};
+template <int64_t N> struct Metal {};
 
 ///
 /// TensorPair
 ///
-template <size_t N, size_t D> struct TensorPair {
-  static constexpr size_t K = N;
-  static constexpr size_t DIM = D;
+template <int64_t N, int64_t D> struct TensorPair {
+  static constexpr int64_t K = N;
+  static constexpr int64_t DIM = D;
 };
-template <size_t K, size_t Dim> using Tp = TensorPair<K, Dim>;
+template <int64_t K, int64_t Dim> using Tp = TensorPair<K, Dim>;
 
 ///
 /// TensorRange
 ///
-template <size_t S, size_t E, size_t D> struct TensorRange {
-  static constexpr size_t START = S;
-  static constexpr size_t END = E;
-  static constexpr size_t DIM = D;
+template <int64_t S, int64_t E, int64_t D> struct TensorRange {
+  static constexpr int64_t START = S;
+  static constexpr int64_t END = E;
+  static constexpr int64_t DIM = D;
 };
-template <size_t Start, size_t End, size_t Dim>
+template <int64_t Start, int64_t End, int64_t Dim>
 using Tr = TensorRange<Start, End, Dim>;
 
 ///
@@ -47,60 +46,61 @@ using Tr = TensorRange<Start, End, Dim>;
 ///
 ///
 ///
-template <size_t... Dims> struct Shape;
+template <int64_t... Dims> struct Shape;
 
 template <> struct Shape<> {
-  static constexpr size_t DIMS = 0;
-  static constexpr size_t NELEMS = 0;
-  static constexpr std::array<size_t, DIMS> SHAPE_DIMS = {};
-  template <size_t... NewDims> using prepend = Shape<NewDims...>;
-  template <size_t... NewDims> using append = Shape<NewDims...>;
+  static constexpr int64_t DIMS = 0;
+  static constexpr int64_t NELEMS = 0;
+  static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = {};
+  template <int64_t... NewDims> using prepend = Shape<NewDims...>;
+  template <int64_t... NewDims> using append = Shape<NewDims...>;
 };
 
-template <size_t First> struct Shape<First> {
-  static constexpr size_t DIMS = 1;
-  static constexpr size_t NELEMS = First;
-  static constexpr size_t LAST = First;
-  static constexpr std::array<size_t, DIMS> SHAPE_DIMS = {First};
-  template <size_t... NewDims> using prepend = Shape<NewDims..., First>;
-  template <size_t... NewDims> using append = Shape<First, NewDims...>;
+template <int64_t First> struct Shape<First> {
+  static constexpr int64_t DIMS = 1;
+  static constexpr int64_t NELEMS = First;
+  static constexpr int64_t LAST = First;
+  static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = {First};
+  template <int64_t... NewDims> using prepend = Shape<NewDims..., First>;
+  template <int64_t... NewDims> using append = Shape<First, NewDims...>;
 };
 
-template <size_t First, size_t Second> struct Shape<First, Second> {
-  static constexpr size_t DIMS = 2;
-  static constexpr size_t NELEMS = First * Second;
-  static constexpr size_t LAST = Second;
-  static constexpr size_t PENULTIMATE = First;
-  static constexpr std::array<size_t, DIMS> SHAPE_DIMS = {First, Second};
+template <int64_t First, int64_t Second> struct Shape<First, Second> {
+  static constexpr int64_t DIMS = 2;
+  static constexpr int64_t NELEMS = First * Second;
+  static constexpr int64_t LAST = Second;
+  static constexpr int64_t PENULTIMATE = First;
+  static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = {First, Second};
   using AllButLastTwo = Shape<>;
-  template <size_t... NewDims> using prepend = Shape<NewDims..., First, Second>;
-  template <size_t... NewDims> using append = Shape<First, Second, NewDims...>;
+  template <int64_t... NewDims>
+  using prepend = Shape<NewDims..., First, Second>;
+  template <int64_t... NewDims> using append = Shape<First, Second, NewDims...>;
 };
 
-template <size_t First, size_t Second, size_t... Rest>
+template <int64_t First, int64_t Second, int64_t... Rest>
 struct Shape<First, Second, Rest...> {
-  static constexpr size_t DIMS = 2 + sizeof...(Rest);
-  static constexpr size_t NELEMS = First * Second * Shape<Rest...>::NELEMS;
-  static constexpr size_t LAST = Shape<Rest...>::LAST;
-  static constexpr size_t PENULTIMATE = Shape<Second, Rest...>::PENULTIMATE;
-  static constexpr std::array<size_t, DIMS> SHAPE_DIMS = {First, Second,
-                                                          Rest...};
+  static constexpr int64_t DIMS = 2 + sizeof...(Rest);
+  static constexpr int64_t NELEMS = First * Second * Shape<Rest...>::NELEMS;
+  static constexpr int64_t LAST = Shape<Rest...>::LAST;
+  static constexpr int64_t PENULTIMATE = Shape<Second, Rest...>::PENULTIMATE;
+  static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = {First, Second,
+                                                           Rest...};
   using AllButLastTwo =
       typename Shape<Second, Rest...>::AllButLastTwo::template prepend<First>;
-  template <size_t... NewDims>
+  template <int64_t... NewDims>
   using prepend = Shape<NewDims..., First, Second, Rest...>;
-  template <size_t... NewDims>
+  template <int64_t... NewDims>
   using append = Shape<First, Second, Rest..., NewDims...>;
 };
 
 ///
 /// IndicesPair
 ///
-template <size_t D, size_t... I> struct IndicesPair {
-  static constexpr size_t DIM = D;
+template <int64_t D, int64_t... I> struct IndicesPair {
+  static constexpr int64_t DIM = D;
   using Indices = Shape<I...>;
 };
-template <size_t Dim, size_t... Indices>
+template <int64_t Dim, int64_t... Indices>
 using Ip = IndicesPair<Dim, Indices...>;
 
 ///
@@ -116,11 +116,11 @@ using Ip = IndicesPair<Dim, Indices...>;
 ///
 template <typename P1, typename P2> struct IsSameAsPack;
 
-template <size_t First1, size_t First2>
+template <int64_t First1, int64_t First2>
 struct IsSameAsPack<Shape<First1>, Shape<First2>>
     : std::__bool_constant<First1 == First2> {};
 
-template <size_t First1, size_t... Rest1, size_t First2, size_t... Rest2>
+template <int64_t First1, int64_t... Rest1, int64_t First2, int64_t... Rest2>
 struct IsSameAsPack<Shape<First1, Rest1...>, Shape<First2, Rest2...>>
     : std::__bool_constant<
           (First1 == First2) &&
@@ -131,16 +131,16 @@ struct IsSameAsPack<Shape<First1, Rest1...>, Shape<First2, Rest2...>>
 ///
 template <int Idx, typename P1, typename P2> struct IsCatCompatible;
 
-template <size_t First1, size_t First2>
+template <int64_t First1, int64_t First2>
 struct IsCatCompatible<0, Shape<First1>, Shape<First2>> : std::true_type {};
 
-template <size_t First1, size_t... Rest1, size_t First2, size_t... Rest2>
+template <int64_t First1, int64_t... Rest1, int64_t First2, int64_t... Rest2>
 struct IsCatCompatible<0, Shape<First1, Rest1...>, Shape<First2, Rest2...>>
     : std::__bool_constant<
           IsSameAsPack<Shape<Rest1...>, Shape<Rest2...>>::value> {};
 
-template <int Idx, size_t First1, size_t... Rest1, size_t First2,
-          size_t... Rest2>
+template <int Idx, int64_t First1, int64_t... Rest1, int64_t First2,
+          int64_t... Rest2>
 struct IsCatCompatible<Idx, Shape<First1, Rest1...>, Shape<First2, Rest2...>>
     : std::__bool_constant<
           First1 == First2 &&
@@ -149,12 +149,12 @@ struct IsCatCompatible<Idx, Shape<First1, Rest1...>, Shape<First2, Rest2...>>
 ///
 /// SetDimAtIdx
 ///
-template <size_t Idx, size_t Dim, typename T> struct SetDimAtIdx;
-template <size_t Dim, size_t First, size_t... Dims>
+template <int64_t Idx, int64_t Dim, typename T> struct SetDimAtIdx;
+template <int64_t Dim, int64_t First, int64_t... Dims>
 struct SetDimAtIdx<0, Dim, Shape<First, Dims...>> {
   using type = Shape<Dim, Dims...>;
 };
-template <size_t Idx, size_t Dim, size_t First, size_t... Rest>
+template <int64_t Idx, int64_t Dim, int64_t First, int64_t... Rest>
 struct SetDimAtIdx<Idx, Dim, Shape<First, Rest...>> {
   static_assert(Idx <= sizeof...(Rest), "\nError: Index out of bounds.\n");
   using type =
@@ -165,12 +165,12 @@ struct SetDimAtIdx<Idx, Dim, Shape<First, Rest...>> {
 ///
 /// IsNotInPack
 ///
-template <size_t N, typename T> struct IsNotInPack;
+template <int64_t N, typename T> struct IsNotInPack;
 
-template <size_t N, size_t First>
+template <int64_t N, int64_t First>
 struct IsNotInPack<N, Shape<First>> : std::__bool_constant<N != First> {};
 
-template <size_t N, size_t First, size_t... Rest>
+template <int64_t N, int64_t First, int64_t... Rest>
 struct IsNotInPack<N, Shape<First, Rest...>>
     : std::__bool_constant<N != First &&
                            IsNotInPack<N, Shape<Rest...>>::value> {};
@@ -182,9 +182,9 @@ template <typename T> struct AreAllUnique;
 
 template <> struct AreAllUnique<Shape<>> : std::true_type {};
 
-template <size_t First> struct AreAllUnique<Shape<First>> : std::true_type {};
+template <int64_t First> struct AreAllUnique<Shape<First>> : std::true_type {};
 
-template <size_t First, size_t... Rest>
+template <int64_t First, int64_t... Rest>
 struct AreAllUnique<Shape<First, Rest...>>
     : std::__bool_constant<IsNotInPack<First, Shape<Rest...>>::value &&
                            AreAllUnique<Shape<Rest...>>::value> {};
@@ -192,15 +192,15 @@ struct AreAllUnique<Shape<First, Rest...>>
 ///
 /// AreAllLessThanN
 ///
-template <size_t N, typename T> struct AreAllLessThanN;
+template <int64_t N, typename T> struct AreAllLessThanN;
 
-template <size_t N> struct AreAllLessThanN<N, Shape<>> : std::true_type {};
+template <int64_t N> struct AreAllLessThanN<N, Shape<>> : std::true_type {};
 
-template <size_t N, size_t First>
+template <int64_t N, int64_t First>
     struct AreAllLessThanN<N, Shape<First>> : std::__bool_constant < First<N> {
 };
 
-template <size_t N, size_t First, size_t... Rest>
+template <int64_t N, int64_t First, int64_t... Rest>
     struct AreAllLessThanN<N, Shape<First, Rest...>>
     : std::__bool_constant <
       First<N && AreAllLessThanN<N, Shape<Rest...>>::value> {};
@@ -222,16 +222,16 @@ struct AreAllSameAs<As, First, Rest...>
 ///
 /// AreAllInIncreasingOrder
 ///
-template <size_t... Dims> struct AreAllInIncreasingOrder;
+template <int64_t... Dims> struct AreAllInIncreasingOrder;
 
-template <size_t First>
+template <int64_t First>
 struct AreAllInIncreasingOrder<First> : std::true_type {};
 
-template <size_t First, size_t Second>
+template <int64_t First, int64_t Second>
     struct AreAllInIncreasingOrder<First, Second> : std::__bool_constant <
                                                     First<Second> {};
 
-template <size_t First, size_t Second, size_t... Rest>
+template <int64_t First, int64_t Second, int64_t... Rest>
     struct AreAllInIncreasingOrder<First, Second, Rest...>
     : std::__bool_constant <
       First<Second && AreAllInIncreasingOrder<Second, Rest...>::value> {};
@@ -302,18 +302,19 @@ struct AreTensorPairDimsUnique<First, Second, Rest...>
 ///
 /// CatArrayShape
 ///
-template <typename S, size_t Idx, size_t Mul> struct CatArrayShape;
-template <size_t Mul> struct CatArrayShape<Shape<>, 0, Mul> {
+template <typename S, int64_t Idx, int64_t Mul> struct CatArrayShape;
+template <int64_t Mul> struct CatArrayShape<Shape<>, 0, Mul> {
   using type = Shape<>;
 };
-template <size_t First, size_t Mul> struct CatArrayShape<Shape<First>, 0, Mul> {
+template <int64_t First, int64_t Mul>
+struct CatArrayShape<Shape<First>, 0, Mul> {
   using type = Shape<First * Mul>;
 };
-template <size_t First, size_t... Rest, size_t Mul>
+template <int64_t First, int64_t... Rest, int64_t Mul>
 struct CatArrayShape<Shape<First, Rest...>, 0, Mul> {
   using type = Shape<First * Mul, Rest...>;
 };
-template <size_t First, size_t... Rest, size_t Idx, size_t Mul>
+template <int64_t First, int64_t... Rest, int64_t Idx, int64_t Mul>
 struct CatArrayShape<Shape<First, Rest...>, Idx, Mul> {
   static_assert(Idx <= sizeof...(Rest), "Error: Index out of bounds.");
   using type = typename CatArrayShape<Shape<Rest...>, Idx - 1,
@@ -324,13 +325,13 @@ struct CatArrayShape<Shape<First, Rest...>, Idx, Mul> {
 // CatShape
 //
 
-template <size_t Idx, typename ShapeType, typename... Shapes> struct CatShape;
+template <int64_t Idx, typename ShapeType, typename... Shapes> struct CatShape;
 
-template <size_t Idx, typename ShapeType> struct CatShape<Idx, ShapeType> {
+template <int64_t Idx, typename ShapeType> struct CatShape<Idx, ShapeType> {
   static_assert(Idx < ShapeType::DIMS, "Index out of bounds.");
 };
 
-template <size_t Idx, typename ShapeType, typename FirstShape>
+template <int64_t Idx, typename ShapeType, typename FirstShape>
 struct CatShape<Idx, ShapeType, FirstShape> {
   static_assert(Idx < ShapeType::DIMS, "Index out of bounds.");
   static_assert(FirstShape::DIMS == ShapeType::DIMS,
@@ -338,12 +339,12 @@ struct CatShape<Idx, ShapeType, FirstShape> {
   static_assert(
       IsCatCompatible<Idx, ShapeType, FirstShape>::value,
       "Shapes must have the same dimensions except for the one at Idx");
-  static constexpr size_t new_dim =
+  static constexpr int64_t new_dim =
       ShapeType::SHAPE_DIMS[Idx] + FirstShape::SHAPE_DIMS[Idx];
   using type = typename SetDimAtIdx<Idx, new_dim, ShapeType>::type;
 };
 
-template <size_t Idx, typename ShapeType, typename FirstShape,
+template <int64_t Idx, typename ShapeType, typename FirstShape,
           typename... RestShapes>
 struct CatShape<Idx, ShapeType, FirstShape, RestShapes...> {
   static_assert(Idx < ShapeType::DIMS, "Index out of bounds.");
@@ -352,7 +353,7 @@ struct CatShape<Idx, ShapeType, FirstShape, RestShapes...> {
   static_assert(
       IsCatCompatible<Idx, ShapeType, FirstShape>::value,
       "Shapes must have the same dimensions except for the one at Idx");
-  static constexpr size_t new_dim =
+  static constexpr int64_t new_dim =
       FirstShape::SHAPE_DIMS[Idx] +
       CatShape<Idx, ShapeType, RestShapes...>::new_dim;
   using type = typename SetDimAtIdx<Idx, new_dim, ShapeType>::type;
@@ -389,13 +390,13 @@ template <typename S1, typename S2> struct MatmulShape {
 ///
 
 template <typename S1, typename S2> struct TransposeShape;
-template <size_t First, typename S2> struct TransposeShape<Shape<First>, S2> {
+template <int64_t First, typename S2> struct TransposeShape<Shape<First>, S2> {
   static_assert(
       First < S2::DIMS,
       "\nError: The order contains too many items, must be == Shape::DIMS.\n");
   using type = Shape<S2::SHAPE_DIMS[First]>;
 };
-template <size_t First, size_t... Rest, typename S2>
+template <int64_t First, int64_t... Rest, typename S2>
 struct TransposeShape<Shape<First, Rest...>, S2> {
   static_assert(
       First < S2::DIMS,
@@ -407,18 +408,18 @@ struct TransposeShape<Shape<First, Rest...>, S2> {
 ///
 /// Unsqueeze
 ///
-template <size_t Dim, typename S> struct UnsqueezeShape;
+template <int64_t Dim, typename S> struct UnsqueezeShape;
 
 template <> struct UnsqueezeShape<0, Shape<>> {
   using type = Shape<1>;
 };
 
-template <size_t First, size_t... Dims>
+template <int64_t First, int64_t... Dims>
 struct UnsqueezeShape<0, Shape<First, Dims...>> {
   using type = Shape<1, First, Dims...>;
 };
 
-template <size_t Dim, size_t First, size_t... Rest>
+template <int64_t Dim, int64_t First, int64_t... Rest>
 struct UnsqueezeShape<Dim, Shape<First, Rest...>> {
   using type =
       typename UnsqueezeShape<Dim - 1,
@@ -428,14 +429,14 @@ struct UnsqueezeShape<Dim, Shape<First, Rest...>> {
 ///
 /// VariadicUnsqueeze
 ///
-template <size_t Curr, typename D, typename S> struct VariadicUnsqueezeShape;
+template <int64_t Curr, typename D, typename S> struct VariadicUnsqueezeShape;
 
-template <size_t Curr, size_t First, typename S>
+template <int64_t Curr, int64_t First, typename S>
 struct VariadicUnsqueezeShape<Curr, Shape<First>, S> {
   using type = typename UnsqueezeShape<First + Curr, S>::type;
 };
 
-template <size_t Curr, size_t First, size_t... Rest, typename S>
+template <int64_t Curr, int64_t First, int64_t... Rest, typename S>
 struct VariadicUnsqueezeShape<Curr, Shape<First, Rest...>, S> {
   static_assert(AreAllInIncreasingOrder<First, Rest...>::value,
                 "\nThe provided dimensions must be in increasing order.\n");
@@ -447,13 +448,13 @@ struct VariadicUnsqueezeShape<Curr, Shape<First, Rest...>, S> {
 ///
 /// UnsqueezeDimShape
 ///
-template <size_t Dim, typename S> struct UnsqueezeDimShape;
+template <int64_t Dim, typename S> struct UnsqueezeDimShape;
 
 template <typename S> struct UnsqueezeDimShape<0, S> {
   using type = typename S::template prepend<1>;
 };
 
-template <size_t Dim, typename S> struct UnsqueezeDimShape {
+template <int64_t Dim, typename S> struct UnsqueezeDimShape {
   using type =
       typename UnsqueezeDimShape<Dim - 1,
                                  typename S::template prepend<1>>::type;
@@ -468,12 +469,12 @@ template <> struct SqueezeShape<Shape<>> {
   using type = Shape<>;
 };
 
-template <size_t First> struct SqueezeShape<Shape<First>> {
+template <int64_t First> struct SqueezeShape<Shape<First>> {
   using type =
       typename std::conditional<First == 1, Shape<>, Shape<First>>::type;
 };
 
-template <size_t First, size_t... Rest>
+template <int64_t First, int64_t... Rest>
 struct SqueezeShape<Shape<First, Rest...>> {
   using type = typename std::conditional<
       First == 1, typename SqueezeShape<Shape<Rest...>>::type,
@@ -484,15 +485,15 @@ struct SqueezeShape<Shape<First, Rest...>> {
 ///
 /// SqueezeShapeAtIdx
 ///
-template <size_t Idx, typename S> struct SqueezeShapeAtIdx;
+template <int64_t Idx, typename S> struct SqueezeShapeAtIdx;
 
-template <size_t First, size_t... Rest>
+template <int64_t First, int64_t... Rest>
 struct SqueezeShapeAtIdx<0, Shape<First, Rest...>> {
   using type = typename std::conditional<First == 1, Shape<Rest...>,
                                          Shape<First, Rest...>>::type;
 };
 
-template <size_t Idx, size_t First, size_t... Rest>
+template <int64_t Idx, int64_t First, int64_t... Rest>
 struct SqueezeShapeAtIdx<Idx, Shape<First, Rest...>> {
   static_assert(Idx < Shape<First, Rest...>::DIMS,
                 "\nIdx must be < Shape::DIMS.\n");
@@ -504,14 +505,14 @@ struct SqueezeShapeAtIdx<Idx, Shape<First, Rest...>> {
 ///
 /// VariadicSqueeze
 ///
-template <size_t Curr, typename T, typename S> struct VariadicSqueezeShape;
+template <int64_t Curr, typename T, typename S> struct VariadicSqueezeShape;
 
-template <size_t Curr, size_t First, typename S>
+template <int64_t Curr, int64_t First, typename S>
 struct VariadicSqueezeShape<Curr, Shape<First>, S> {
   using type = typename SqueezeShapeAtIdx<First - Curr, S>::type;
 };
 
-template <size_t Curr, size_t First, size_t... Rest, typename S>
+template <int64_t Curr, int64_t First, int64_t... Rest, typename S>
 struct VariadicSqueezeShape<Curr, Shape<First, Rest...>, S> {
   static_assert(AreAllInIncreasingOrder<First, Rest...>::value,
                 "\nThe provided dimensions must be in increasing order.\n");
@@ -527,7 +528,7 @@ struct VariadicSqueezeShape<Curr, Shape<First, Rest...>, S> {
 ///
 /// SwapDimsShape
 ///
-template <size_t I, size_t J, typename S> struct SwapDimsShape {
+template <int64_t I, int64_t J, typename S> struct SwapDimsShape {
   static_assert(I < S::DIMS, "\nI must be < Shape::DIMS.\n");
   static_assert(J < S::DIMS, "\nJ must be < Shape::DIMS.\n");
   using type = typename SetDimAtIdx<
@@ -628,7 +629,7 @@ struct NarrowShape<S, First, Rest...> {
 ///
 /// SliceShape
 ///
-template <size_t Curr, typename S, typename... TensorRanges> struct SliceShape;
+template <int64_t Curr, typename S, typename... TensorRanges> struct SliceShape;
 
 template <typename S, typename First, typename... Rest>
 struct SliceShape<0, S, First, Rest...> {
@@ -644,7 +645,7 @@ struct SliceShape<0, S, First, Rest...> {
       First::Dim == 0, Shape<First::End - First::Start>, Shape<>>::type;
 };
 
-template <size_t Curr, typename S, typename First>
+template <int64_t Curr, typename S, typename First>
 struct SliceShape<Curr, S, First> {
   static_assert(First::Dim < S::DIMS, "\nError: Index out of bounds.\n");
   static_assert(First::Start <= First::End,
@@ -662,7 +663,7 @@ struct SliceShape<Curr, S, First> {
                   typename SliceShape<Curr - 1, S, First>::type>::type>::type;
 };
 
-template <size_t Curr, typename S, typename First, typename... Rest>
+template <int64_t Curr, typename S, typename First, typename... Rest>
 struct SliceShape<Curr, S, First, Rest...> {
   static_assert(AreTensorRangesAllInDecreasingOrder<First, Rest...>::value,
                 "\nThe provided dimensions must be in decreasing order.\n");
@@ -751,7 +752,7 @@ struct SelectShape<S, First, Rest...> {
 ///
 /// PadShape
 ///
-template <typename S, size_t Height, size_t Width> struct PadShape {
+template <typename S, int64_t Height, int64_t Width> struct PadShape {
   static_assert(S::DIMS > 1,
                 "\nPad only works on tensors with at least 2 dimensions.\n");
   using type = typename SetDimAtIdx<
@@ -778,17 +779,16 @@ public:
   using TensorType = TType;
   using TensorDevice = TDevice;
 
-  static constexpr size_t DIMS = TShape::DIMS;
-  static constexpr size_t NELEMS = TShape::NELEMS;
-  static constexpr std::array<size_t, DIMS> SHAPE_DIMS = TShape::SHAPE_DIMS;
+  static constexpr int64_t DIMS = TShape::DIMS;
+  static constexpr int64_t NELEMS = TShape::NELEMS;
+  static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = TShape::SHAPE_DIMS;
 
   torch::Tensor base;
 
   // Constructors
 
-  // Tensor()
-  //     : base(torch::zeros(std::vector(SHAPE_DIMS.begin(), SHAPE_DIMS.end())))
-  //     {}
+  Tensor()
+      : base(torch::zeros(std::vector(SHAPE_DIMS.begin(), SHAPE_DIMS.end()))) {}
   explicit Tensor(const Tensor &other) : base(other->base) {}
   explicit Tensor(Tensor &&other) : base(other->base) {}
 
@@ -808,48 +808,48 @@ public:
 
   [[nodiscard]] Tensor operator+(const Tensor &other) const noexcept {
     Tensor result;
-    for (size_t i = 0; i < TShape::NELEMS; i++) {
+    for (int64_t i = 0; i < TShape::NELEMS; i++) {
       result.data[i] = other.data[i] + this->data[i];
     }
     return result;
   }
 
   void operator+=(const Tensor &other) noexcept {
-    for (size_t i = 0; i < TShape::NELEMS; i++) {
+    for (int64_t i = 0; i < TShape::NELEMS; i++) {
       this->data[i] += other.data[i];
     }
   }
 
   [[nodiscard]] Tensor operator-(const Tensor &other) const noexcept {
     Tensor result;
-    for (size_t i = 0; i < TShape::NELEMS; i++) {
+    for (int64_t i = 0; i < TShape::NELEMS; i++) {
       result.data[i] = other.data[i] + this->data[i];
     }
     return result;
   }
 
   void operator-=(const Tensor &other) noexcept {
-    for (size_t i = 0; i < TShape::NELEMS; i++) {
+    for (int64_t i = 0; i < TShape::NELEMS; i++) {
       this->data[i] -= other.data[i];
     }
   }
 
   [[nodiscard]] Tensor operator*(const Tensor &other) const noexcept {
     Tensor result;
-    for (size_t i = 0; i < TShape::NELEMS; i++) {
+    for (int64_t i = 0; i < TShape::NELEMS; i++) {
       result.data[i] = other.data[i] * this->data[i];
     }
     return result;
   }
 
   void operator*=(const Tensor &other) noexcept {
-    for (size_t i = 0; i < TShape::NELEMS; i++) {
+    for (int64_t i = 0; i < TShape::NELEMS; i++) {
       this->data[i] *= other.data[i];
     }
   }
 
   bool operator==(const Tensor &other) const noexcept {
-    for (size_t i = 0; i < TShape::NELEMS; i++) {
+    for (int64_t i = 0; i < TShape::NELEMS; i++) {
       if (this->data[i] != other.data[i]) {
         return false;
       }
@@ -862,14 +862,14 @@ public:
   }
 
   void print() const {
-    for (size_t i = 0; i < TShape::NELEMS; ++i) {
+    for (int64_t i = 0; i < TShape::NELEMS; ++i) {
       std::cout << data[i] << " ";
     }
     std::cout << std::endl;
   }
 
   // Reshape
-  template <size_t... NewDims>
+  template <int64_t... NewDims>
   [[nodiscard]] Tensor<Shape<NewDims...>, TType, TDevice> reshape() const {
     static_assert(Shape<NewDims...>::NELEMS == TShape::NELEMS,
                   "\nShape mismatch: To reshape the shapes must have the same"
@@ -902,7 +902,7 @@ public:
   };
 
   // Stack
-  template <size_t Dim = 0, size_t NTensors = 2>
+  template <int64_t Dim = 0, int64_t NTensors = 2>
   [[nodiscard]] static auto stack(const std::array<Tensor, NTensors> &others)
       -> Tensor<typename TShape::template prepend<NTensors>, TType,
                 TDevice> const {
@@ -915,7 +915,7 @@ public:
     return result;
   }
 
-  template <size_t Dim = 0, size_t NTensors = 2>
+  template <int64_t Dim = 0, int64_t NTensors = 2>
   [[nodiscard]] static auto stack(const Tensor other[NTensors])
       -> Tensor<typename TShape::template prepend<NTensors>, TType,
                 TDevice> const {
@@ -942,7 +942,7 @@ public:
   }
 
   // Cat
-  template <size_t Dim = 0, size_t NTensors = 2>
+  template <int64_t Dim = 0, int64_t NTensors = 2>
   [[nodiscard]] static auto cat(const std::array<Tensor, NTensors> &others)
       -> Tensor<typename CatArrayShape<TShape, Dim, NTensors>::type, TType,
                 TDevice> const {
@@ -956,7 +956,7 @@ public:
     return result;
   }
 
-  template <size_t Dim = 0, size_t NTensors = 2>
+  template <int64_t Dim = 0, int64_t NTensors = 2>
   [[nodiscard]] static auto cat(const Tensor others[NTensors])
       -> Tensor<typename CatArrayShape<TShape, Dim, NTensors>::type, TType,
                 TDevice> const {
@@ -970,7 +970,7 @@ public:
     return result;
   }
 
-  template <size_t Dim = 0, typename... Shape2>
+  template <int64_t Dim = 0, typename... Shape2>
   [[nodiscard]] auto cat(const Tensor<Shape2, TType, TDevice> &...others) const
       -> Tensor<typename CatShape<Dim, TShape, Shape2...>::type, TType,
                 TDevice> {
@@ -985,7 +985,7 @@ public:
   }
 
   // Transpose
-  template <size_t... Dims>
+  template <int64_t... Dims>
   [[nodiscard]] auto transpose() const
       -> Tensor<typename TransposeShape<Shape<Dims...>, TShape>::type, TType,
                 TDevice> {
@@ -1014,7 +1014,7 @@ public:
   }
 
   // Unsqueeze <Dims>
-  template <size_t... Dims>
+  template <int64_t... Dims>
   [[nodiscard]] auto unsqueeze() const -> Tensor<
       typename VariadicUnsqueezeShape<0, Shape<Dims...>, TShape>::type, TType,
       TDevice> {
@@ -1033,7 +1033,7 @@ public:
   }
 
   // Unsqueeze dim
-  template <size_t Dim = 1>
+  template <int64_t Dim = 1>
   [[nodiscard]] auto unsqueeze_dim() const
       -> Tensor<typename UnsqueezeDimShape<Dim - TShape::DIMS, TShape>::type,
                 TType, TDevice> {
@@ -1053,7 +1053,7 @@ public:
   }
 
   // Squeeze<Dims>
-  template <size_t... Dims>
+  template <int64_t... Dims>
   [[nodiscard]] auto squeeze() const
       -> Tensor<typename VariadicSqueezeShape<0, Shape<Dims...>, TShape>::type,
                 TType, TDevice> {
@@ -1065,7 +1065,7 @@ public:
   }
 
   // Arange
-  template <size_t Start = 0, size_t End, size_t Step = 1>
+  template <int64_t Start = 0, int64_t End, int64_t Step = 1>
   [[nodiscard]] static auto arange() noexcept
       -> Tensor<Shape<(End - Start) / Step>, TType, TDevice> const {
     static_assert(Start <= End, "\nStart must be <= End.\n");
@@ -1079,7 +1079,7 @@ public:
   }
 
   // Swap dims
-  template <size_t I = 0, size_t J = 1>
+  template <int64_t I = 0, int64_t J = 1>
   [[nodiscard]] auto swap_dims() const
       -> Tensor<typename SwapDimsShape<I, J, TShape>::type, TType, TDevice> {
     Tensor<typename SwapDimsShape<I, J, TShape>::type, TType, TDevice> result;
@@ -1088,7 +1088,7 @@ public:
   }
 
   // Permute
-  template <size_t... Dims>
+  template <int64_t... Dims>
   [[nodiscard]] auto permute() const -> Tensor<Shape<Dims...>, TType, TDevice> {
     static_assert(
         Shape<Dims...>::DIMS == TShape::DIMS,
@@ -1150,7 +1150,7 @@ public:
     return result;
   }
 
-  template <size_t Start = 0, size_t End, size_t Dim = 0>
+  template <int64_t Start = 0, int64_t End, int64_t Dim = 0>
   [[nodiscard]] auto slice() const -> Tensor<
       typename SliceShape<TShape::DIMS, TShape, Tr<Start, End, Dim>>::type,
       TType, TDevice> {
@@ -1174,7 +1174,7 @@ public:
   }
 
   // Chunk
-  template <size_t Chunks = 1, size_t Dim = 0>
+  template <int64_t Chunks = 1, int64_t Dim = 0>
   [[nodiscard]] auto chunk() const -> std::array<
       Tensor<typename SetDimAtIdx<Dim, TShape::SHAPE_DIMS[Dim] / Chunks,
                                   TShape>::type,
@@ -1203,7 +1203,7 @@ public:
     return result;
   }
 
-  template <size_t Dim = 0, size_t... Indices>
+  template <int64_t Dim = 0, int64_t... Indices>
   [[nodiscard]] auto select_only() const
       -> Tensor<typename SelectOnlyShape<TShape, Ip<Dim, Indices...>>::type,
                 TType, TDevice> {
@@ -1221,7 +1221,7 @@ public:
     return result;
   }
 
-  template <size_t Dim = 0, size_t... Indices>
+  template <int64_t Dim = 0, int64_t... Indices>
   [[nodiscard]] auto select() const
       -> Tensor<typename SelectShape<TShape, Ip<Dim, Indices...>>::type, TType,
                 TDevice> {
@@ -1229,7 +1229,7 @@ public:
   }
 
   // pad
-  template <size_t Top, size_t Bottom, size_t Left, size_t Right>
+  template <int64_t Top, int64_t Bottom, int64_t Left, int64_t Right>
   [[nodiscard]] auto pad(TType value)
       -> Tensor<typename PadShape<TShape, Top + Bottom, Left + Right>::type,
                 TType, TDevice> {
