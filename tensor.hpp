@@ -10,7 +10,87 @@
 #include <torch/torch.h>
 #include <vector>
 
-namespace tensor {
+namespace evol {
+
+namespace dtype {
+
+#define DEF_DTYPE(name, value)                                                 \
+  struct name {                                                                \
+    static constexpr torch::Dtype DTYPE = torch::value;                        \
+  };
+
+DEF_DTYPE(i8, kInt8);
+DEF_DTYPE(i16, kInt16);
+DEF_DTYPE(i32, kInt32);
+DEF_DTYPE(i64, kInt64);
+
+DEF_DTYPE(u8, kUInt8);
+DEF_DTYPE(u16, kUInt16);
+DEF_DTYPE(u32, kUInt32);
+DEF_DTYPE(u64, kUInt64);
+
+DEF_DTYPE(f16, kFloat16);
+DEF_DTYPE(f32, kFloat32);
+DEF_DTYPE(f64, kFloat64);
+
+DEF_DTYPE(byte, kByte);
+
+DEF_DTYPE(c16, kComplexHalf);
+DEF_DTYPE(c32, kComplexFloat);
+DEF_DTYPE(c64, kComplexDouble);
+
+DEF_DTYPE(q8, kQInt8);
+DEF_DTYPE(q32, kQInt32);
+DEF_DTYPE(q2x4, kQUInt2x4);
+DEF_DTYPE(q4x2, kQUInt4x2);
+
+DEF_DTYPE(bits8, kBits8);
+DEF_DTYPE(bits16, kBits16);
+DEF_DTYPE(bits2x4, kBits2x4);
+DEF_DTYPE(bits4x2, kBits4x2);
+DEF_DTYPE(bits1x8, kBits1x8);
+
+template <typename T> struct DType;
+
+#define DEF_DTYPE_IMPL(name)                                                   \
+  template <> struct DType<name> {                                             \
+    static constexpr torch::Dtype DTYPE = name::DTYPE;                         \
+  };
+
+DEF_DTYPE_IMPL(i8);
+DEF_DTYPE_IMPL(i16);
+DEF_DTYPE_IMPL(i32);
+DEF_DTYPE_IMPL(i64);
+
+DEF_DTYPE_IMPL(u8);
+DEF_DTYPE_IMPL(u16);
+DEF_DTYPE_IMPL(u32);
+DEF_DTYPE_IMPL(u64);
+
+DEF_DTYPE_IMPL(f16);
+DEF_DTYPE_IMPL(f32);
+DEF_DTYPE_IMPL(f64);
+
+DEF_DTYPE_IMPL(byte);
+
+DEF_DTYPE_IMPL(c16);
+DEF_DTYPE_IMPL(c32);
+DEF_DTYPE_IMPL(c64);
+
+DEF_DTYPE_IMPL(q8);
+DEF_DTYPE_IMPL(q32);
+DEF_DTYPE_IMPL(q2x4);
+DEF_DTYPE_IMPL(q4x2);
+
+DEF_DTYPE_IMPL(bits8);
+DEF_DTYPE_IMPL(bits16);
+DEF_DTYPE_IMPL(bits2x4);
+DEF_DTYPE_IMPL(bits4x2);
+DEF_DTYPE_IMPL(bits1x8);
+
+// bool / char
+
+} // namespace dtype
 
 ///
 /// Devices
@@ -769,10 +849,12 @@ template <typename S, int64_t Height, int64_t Width> struct PadShape {
 ///
 ///
 
-template <typename TShape, typename TType = float, typename TDevice = Cpu>
+template <typename TShape, typename TType = dtype::f32, typename TDevice = Cpu>
 class Tensor {
 private:
   std::unique_ptr<TType[]> data;
+  const std::vector<int64_t> SHAPE_VEC =
+      std::vector(SHAPE_DIMS.begin(), SHAPE_DIMS.end());
 
 public:
   using TensorShape = TShape;
@@ -782,13 +864,13 @@ public:
   static constexpr int64_t DIMS = TShape::DIMS;
   static constexpr int64_t NELEMS = TShape::NELEMS;
   static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = TShape::SHAPE_DIMS;
+  static constexpr torch::ScalarType DTYPE = TType::DTYPE;
 
   torch::Tensor base;
 
   // Constructors
 
-  Tensor()
-      : base(torch::zeros(std::vector(SHAPE_DIMS.begin(), SHAPE_DIMS.end()))) {}
+  Tensor() : base(torch::zeros(SHAPE_VEC, DTYPE)) {}
   explicit Tensor(const Tensor &other) : base(other->base) {}
   explicit Tensor(Tensor &&other) : base(other->base) {}
 
@@ -1277,6 +1359,6 @@ public:
   // math functions
 };
 
-} // namespace tensor
+} // namespace evol
 
 #endif
