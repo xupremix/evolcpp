@@ -3,7 +3,7 @@
 using namespace evol;
 
 int main() {
-  Tensor<Shape<2, 3, 4>> t;
+  Tensor<Shape<2, 3, 4>, f32, CPU> t;
 
   std::cout << "T.dim: " << t.base.dim() << std::endl;
   for (size_t i = 0; i < t.DIMS; i++) {
