@@ -1,7 +1,5 @@
 #pragma once
 
-#include <c10/core/ScalarType.h>
-#include <cstdint>
 #ifndef TENSOR_H
 #define TENSOR_H
 
@@ -13,6 +11,65 @@
 #include <vector>
 
 namespace evol {
+
+///
+///
+///
+/// DEVICE
+///
+///
+///
+namespace device {
+#define DEF_DEVICE(name, value)                                                \
+  struct name {                                                                \
+    static constexpr torch::DeviceType DEVICE = value;                         \
+  };
+
+DEF_DEVICE(CPU, torch::kCPU);
+DEF_DEVICE(CUDA, torch::kCUDA);
+DEF_DEVICE(HIP, torch::kHIP);
+DEF_DEVICE(FPGA, torch::kFPGA);
+DEF_DEVICE(MAIA, torch::kMAIA);
+DEF_DEVICE(XLA, torch::kXLA);
+DEF_DEVICE(MPS, torch::kMPS);
+DEF_DEVICE(Meta, torch::kMeta);
+DEF_DEVICE(Vulkan, torch::kVulkan);
+DEF_DEVICE(Metal, torch::kMetal);
+DEF_DEVICE(XPU, torch::kXPU);
+DEF_DEVICE(HPU, torch::kHPU);
+DEF_DEVICE(VE, torch::kVE);
+DEF_DEVICE(Lazy, torch::kLazy);
+DEF_DEVICE(IPU, torch::kIPU);
+DEF_DEVICE(MTIA, torch::kMTIA);
+DEF_DEVICE(PrivateUse1, torch::kPrivateUse1);
+DEF_DEVICE(OPENGL, torch::DeviceType::OPENGL);
+DEF_DEVICE(OPENCL, torch::DeviceType::OPENCL);
+DEF_DEVICE(IDEEP, torch::DeviceType::IDEEP);
+DEF_DEVICE(MKLDNN, torch::DeviceType::MKLDNN);
+
+} // namespace device
+
+using CPU = device::CPU;
+using CUDA = device::CUDA;
+using HIP = device::HIP;
+using FPGA = device::FPGA;
+using MAIA = device::MAIA;
+using XLA = device::XLA;
+using MPS = device::MPS;
+using Meta = device::Meta;
+using Vulkan = device::Vulkan;
+using Metal = device::Metal;
+using XPU = device::XPU;
+using HPU = device::HPU;
+using VE = device::VE;
+using Lazy = device::Lazy;
+using IPU = device::IPU;
+using MTIA = device::MTIA;
+using PrivateUse1 = device::PrivateUse1;
+using OPENGL = device::OPENGL;
+using OPENCL = device::OPENCL;
+using IDEEP = device::IDEEP;
+using MKLDNN = device::MKLDNN;
 
 ///
 ///
@@ -152,13 +209,6 @@ using bits16 = dtype::bits16;
 using bits2x4 = dtype::bits2x4;
 using bits4x2 = dtype::bits4x2;
 using bits1x8 = dtype::bits1x8;
-
-///
-/// Devices
-///
-struct Cpu {};
-template <int64_t N> struct Cuda {};
-template <int64_t N> struct Metal {};
 
 ///
 /// TensorPair
@@ -910,7 +960,7 @@ template <typename S, int64_t Height, int64_t Width> struct PadShape {
 ///
 ///
 
-template <typename TShape, typename TType = f32, typename TDevice = Cpu>
+template <typename TShape, typename TType = f32, typename TDevice = CPU>
 class Tensor {
 private:
   std::unique_ptr<TType[]> data;
@@ -926,12 +976,16 @@ public:
   static constexpr int64_t NELEMS = TShape::NELEMS;
   static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = TShape::SHAPE_DIMS;
   static constexpr torch::ScalarType DTYPE = TType::DTYPE;
+  static constexpr torch::DeviceType DEVICE = TDevice::DEVICE;
 
   torch::Tensor base;
 
   // Constructors
 
-  Tensor() : base(torch::zeros(SHAPE_VEC, DTYPE)) {}
+  Tensor()
+      : base(torch::zeros(
+            SHAPE_VEC, torch::TensorOptions().dtype(DTYPE).device(DEVICE, 0))) {
+  }
   explicit Tensor(const Tensor &other) : base(other->base) {}
   explicit Tensor(Tensor &&other) : base(other->base) {}
 
@@ -1309,7 +1363,7 @@ public:
   }
 
   // to_device
-  template <typename Device = Cpu>
+  template <typename Device = CPU>
   [[nodiscard]] auto to_device() const -> Tensor<TShape, TType, Device> {
     Tensor<TShape, TType, Device> result;
     // TODO: Implementation with libtorch
