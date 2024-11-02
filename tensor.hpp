@@ -21,7 +21,7 @@ namespace evol {
 ///
 namespace device {
 #define DEF_DEVICE(name, value)                                                \
-  template <int64_t N> struct name {                                           \
+  template <int64_t N = 0> struct name {                                       \
     static constexpr torch::DeviceType DEVICE = value;                         \
     static constexpr int64_t INDEX = N;                                        \
   };
