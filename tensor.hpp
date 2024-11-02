@@ -1,15 +1,13 @@
 #pragma once
 
-#include <cstdint>
+#include <ATen/ops/stack.h>
 #ifndef TENSOR_H
 #define TENSOR_H
 
 #include <array>
 #include <functional>
 #include <iostream>
-#include <memory>
 #include <torch/torch.h>
-#include <vector>
 
 namespace evol {
 
@@ -21,55 +19,56 @@ namespace evol {
 ///
 ///
 namespace device {
-#define DEF_DEVICE(name, value)                                                \
-  struct name {                                                                \
+#define DEF_DEVICE(name, value, default)                                       \
+  template <int64_t N = default> struct name {                                 \
     static constexpr torch::DeviceType DEVICE = value;                         \
+    static constexpr int64_t INDEX = N;                                        \
   };
 
-DEF_DEVICE(CPU, torch::kCPU);
-DEF_DEVICE(CUDA, torch::kCUDA);
-DEF_DEVICE(HIP, torch::kHIP);
-DEF_DEVICE(FPGA, torch::kFPGA);
-DEF_DEVICE(MAIA, torch::kMAIA);
-DEF_DEVICE(XLA, torch::kXLA);
-DEF_DEVICE(MPS, torch::kMPS);
-DEF_DEVICE(Meta, torch::kMeta);
-DEF_DEVICE(Vulkan, torch::kVulkan);
-DEF_DEVICE(Metal, torch::kMetal);
-DEF_DEVICE(XPU, torch::kXPU);
-DEF_DEVICE(HPU, torch::kHPU);
-DEF_DEVICE(VE, torch::kVE);
-DEF_DEVICE(Lazy, torch::kLazy);
-DEF_DEVICE(IPU, torch::kIPU);
-DEF_DEVICE(MTIA, torch::kMTIA);
-DEF_DEVICE(PrivateUse1, torch::kPrivateUse1);
-DEF_DEVICE(OPENGL, torch::DeviceType::OPENGL);
-DEF_DEVICE(OPENCL, torch::DeviceType::OPENCL);
-DEF_DEVICE(IDEEP, torch::DeviceType::IDEEP);
-DEF_DEVICE(MKLDNN, torch::DeviceType::MKLDNN);
+DEF_DEVICE(CPU, torch::kCPU, 0);
+DEF_DEVICE(CUDA, torch::kCUDA, 1);
+DEF_DEVICE(HIP, torch::kHIP, 1);
+DEF_DEVICE(FPGA, torch::kFPGA, 1);
+DEF_DEVICE(MAIA, torch::kMAIA, 1);
+DEF_DEVICE(XLA, torch::kXLA, 1);
+DEF_DEVICE(MPS, torch::kMPS, 1);
+DEF_DEVICE(Meta, torch::kMeta, 1);
+DEF_DEVICE(Vulkan, torch::kVulkan, 1);
+DEF_DEVICE(Metal, torch::kMetal, 1);
+DEF_DEVICE(XPU, torch::kXPU, 1);
+DEF_DEVICE(HPU, torch::kHPU, 1);
+DEF_DEVICE(VE, torch::kVE, 1);
+DEF_DEVICE(Lazy, torch::kLazy, 1);
+DEF_DEVICE(IPU, torch::kIPU, 1);
+DEF_DEVICE(MTIA, torch::kMTIA, 1);
+DEF_DEVICE(PrivateUse1, torch::kPrivateUse1, 1);
+DEF_DEVICE(OPENGL, torch::DeviceType::OPENGL, 1);
+DEF_DEVICE(OPENCL, torch::DeviceType::OPENCL, 1);
+DEF_DEVICE(IDEEP, torch::DeviceType::IDEEP, 1);
+DEF_DEVICE(MKLDNN, torch::DeviceType::MKLDNN, 1);
 
 } // namespace device
-using CPU = device::CPU;
-using CUDA = device::CUDA;
-using HIP = device::HIP;
-using FPGA = device::FPGA;
-using MAIA = device::MAIA;
-using XLA = device::XLA;
-using MPS = device::MPS;
-using Meta = device::Meta;
-using Vulkan = device::Vulkan;
-using Metal = device::Metal;
-using XPU = device::XPU;
-using HPU = device::HPU;
-using VE = device::VE;
-using Lazy = device::Lazy;
-using IPU = device::IPU;
-using MTIA = device::MTIA;
-using PrivateUse1 = device::PrivateUse1;
-using OPENGL = device::OPENGL;
-using OPENCL = device::OPENCL;
-using IDEEP = device::IDEEP;
-using MKLDNN = device::MKLDNN;
+template <int64_t N = 0> using CPU = device::CPU<N>;
+template <int64_t N = 1> using CUDA = device::CUDA<N>;
+template <int64_t N = 1> using HIP = device::HIP<N>;
+template <int64_t N = 1> using FPGA = device::FPGA<N>;
+template <int64_t N = 1> using MAIA = device::MAIA<N>;
+template <int64_t N = 1> using XLA = device::XLA<N>;
+template <int64_t N = 1> using MPS = device::MPS<N>;
+template <int64_t N = 1> using Meta = device::Meta<N>;
+template <int64_t N = 1> using Vulkan = device::Vulkan<N>;
+template <int64_t N = 1> using Metal = device::Metal<N>;
+template <int64_t N = 1> using XPU = device::XPU<N>;
+template <int64_t N = 1> using HPU = device::HPU<N>;
+template <int64_t N = 1> using VE = device::VE<N>;
+template <int64_t N = 1> using Lazy = device::Lazy<N>;
+template <int64_t N = 1> using IPU = device::IPU<N>;
+template <int64_t N = 1> using MTIA = device::MTIA<N>;
+template <int64_t N = 1> using PrivateUse1 = device::PrivateUse1<N>;
+template <int64_t N = 1> using OPENGL = device::OPENGL<N>;
+template <int64_t N = 1> using OPENCL = device::OPENCL<N>;
+template <int64_t N = 1> using IDEEP = device::IDEEP<N>;
+template <int64_t N = 1> using MKLDNN = device::MKLDNN<N>;
 
 ///
 ///
@@ -81,52 +80,56 @@ using MKLDNN = device::MKLDNN;
 
 namespace dtype {
 
-#define DEF_DTYPE(name, value)                                                 \
-  struct name {                                                                \
+#define DEF_DTYPE(name, value, size)                                           \
+  struct alignas(size) name {                                                  \
     static constexpr torch::Dtype DTYPE = torch::value;                        \
+    static constexpr size_t SIZE = size;                                       \
   };
 
-DEF_DTYPE(i8, kInt8);
-DEF_DTYPE(i16, kInt16);
-DEF_DTYPE(i32, kInt32);
-DEF_DTYPE(i64, kInt64);
+DEF_DTYPE(i8, kInt8, 1);
+DEF_DTYPE(i16, kInt16, 2);
+DEF_DTYPE(i32, kInt32, 4);
+DEF_DTYPE(i64, kInt64, 8);
 
-DEF_DTYPE(u8, kUInt8);
-DEF_DTYPE(u16, kUInt16);
-DEF_DTYPE(u32, kUInt32);
-DEF_DTYPE(u64, kUInt64);
+DEF_DTYPE(u8, kUInt8, 1);
+DEF_DTYPE(u16, kUInt16, 2);
+DEF_DTYPE(u32, kUInt32, 4);
+DEF_DTYPE(u64, kUInt64, 8);
 
-DEF_DTYPE(f16, kFloat16);
-DEF_DTYPE(f32, kFloat32);
-DEF_DTYPE(f64, kFloat64);
+DEF_DTYPE(f16, kFloat16, 2);
+DEF_DTYPE(f32, kFloat32, 4);
+DEF_DTYPE(f64, kFloat64, 8);
+DEF_DTYPE(f128, kLong, 16);
 
-DEF_DTYPE(byte, kByte);
+DEF_DTYPE(byte, kByte, 1);
 
-DEF_DTYPE(c16, kComplexHalf);
-DEF_DTYPE(c32, kComplexFloat);
-DEF_DTYPE(c64, kComplexDouble);
+DEF_DTYPE(c16, kComplexHalf, 4);
+DEF_DTYPE(c32, kComplexFloat, 8);
+DEF_DTYPE(c64, kComplexDouble, 16);
 
-DEF_DTYPE(q8, kQInt8);
-DEF_DTYPE(q32, kQInt32);
-DEF_DTYPE(q2x4, kQUInt2x4);
-DEF_DTYPE(q4x2, kQUInt4x2);
+DEF_DTYPE(q8, kQInt8, 1);
+DEF_DTYPE(q32, kQInt32, 2);
+DEF_DTYPE(q2x4, kQUInt2x4, 1);
+DEF_DTYPE(q4x2, kQUInt4x2, 1);
 
-DEF_DTYPE(bits8, kBits8);
-DEF_DTYPE(bits16, kBits16);
-DEF_DTYPE(bits2x4, kBits2x4);
-DEF_DTYPE(bits4x2, kBits4x2);
-DEF_DTYPE(bits1x8, kBits1x8);
+DEF_DTYPE(bits8, kBits8, 1);
+DEF_DTYPE(bits16, kBits16, 2);
+DEF_DTYPE(bits2x4, kBits2x4, 1);
+DEF_DTYPE(bits4x2, kBits4x2, 1);
+DEF_DTYPE(bits1x8, kBits1x8, 1);
 
-template <typename T> struct DType;
+template <typename T> struct alignas(sizeof(T)) DType;
 
 #define DEF_DTYPE_IMPL(name)                                                   \
-  template <> struct DType<name> {                                             \
+  template <> struct alignas(name::SIZE) DType<name> {                         \
     static constexpr torch::Dtype DTYPE = name::DTYPE;                         \
+    static constexpr size_t SIZE = name::SIZE;                                 \
   };
 
 #define DEF_DTYPE_IMPL_BASE(name, val)                                         \
-  template <> struct DType<name> {                                             \
+  template <> struct alignas(sizeof(name)) DType<name> {                       \
     static constexpr torch::Dtype DTYPE = torch::val;                          \
+    static constexpr size_t SIZE = sizeof(name);                               \
   };
 
 DEF_DTYPE_IMPL(i8);
@@ -142,6 +145,7 @@ DEF_DTYPE_IMPL(u64);
 DEF_DTYPE_IMPL(f16);
 DEF_DTYPE_IMPL(f32);
 DEF_DTYPE_IMPL(f64);
+DEF_DTYPE_IMPL(f128);
 
 DEF_DTYPE_IMPL(byte);
 
@@ -176,6 +180,8 @@ DEF_DTYPE_IMPL_BASE(uint64_t, kUInt64);
 DEF_DTYPE_IMPL_BASE(float, kFloat);
 DEF_DTYPE_IMPL_BASE(double, kDouble);
 DEF_DTYPE_IMPL_BASE(long double, kLong);
+DEF_DTYPE_IMPL_BASE(long long, kLong);
+DEF_DTYPE_IMPL_BASE(unsigned long long, kLong);
 
 }; // namespace dtype
 
@@ -192,6 +198,7 @@ using u64 = dtype::u64;
 using f16 = dtype::f16;
 using f32 = dtype::f32;
 using f64 = dtype::f64;
+using f128 = dtype::f128;
 
 using byte = dtype::byte;
 
@@ -960,33 +967,35 @@ template <typename S, int64_t Height, int64_t Width> struct PadShape {
 ///
 ///
 
-template <typename TShape, typename TType = f32, typename TDevice = CPU,
-          int64_t TDeviceIdx = 0>
+template <typename TShape, typename TType = f32, typename TDevice = CPU<0>>
 class Tensor {
 private:
-  std::unique_ptr<TType[]> data;
-  const std::vector<int64_t> SHAPE_VEC =
-      std::vector(SHAPE_DIMS.begin(), SHAPE_DIMS.end());
+  // This cannot be checked at comptime so it's declared as private
+  Tensor(torch::Tensor base) : base(base) {}
 
+protected:
 public:
+  torch::Tensor base;
+
   using TensorShape = TShape;
-  using TensorType = TType;
+  using TensorType = dtype::DType<TType>;
   using TensorDevice = TDevice;
 
   static constexpr int64_t DIMS = TShape::DIMS;
   static constexpr int64_t NELEMS = TShape::NELEMS;
   static constexpr std::array<int64_t, DIMS> SHAPE_DIMS = TShape::SHAPE_DIMS;
-  static constexpr torch::ScalarType DTYPE = TType::DTYPE;
-  static constexpr torch::DeviceType DEVICE = TDevice::DEVICE;
-  static constexpr int64_t DEVICE_IDX = TDeviceIdx;
 
-  torch::Tensor base;
+  static constexpr torch::ScalarType DTYPE = TensorType::DTYPE;
+  static constexpr size_t DTYPE_SIZE = TensorType::SIZE;
+
+  static constexpr torch::DeviceType DEVICE = TDevice::DEVICE;
+  static constexpr int64_t DEVICE_IDX = TDevice::INDEX;
 
   // Constructors
 
   Tensor()
-      : base(torch::zeros(SHAPE_VEC, torch::TensorOptions().dtype(DTYPE).device(
-                                         DEVICE, DEVICE_IDX))) {}
+      : base(torch::zeros(SHAPE_DIMS,
+                          torch::dtype(DTYPE).device(DEVICE, DEVICE_IDX))) {}
   explicit Tensor(const Tensor &other) : base(other->base) {}
   explicit Tensor(Tensor &&other) : base(other->base) {}
 
@@ -999,71 +1008,53 @@ public:
 
   [[nodiscard]] Tensor &operator=(Tensor &&other) noexcept {
     if (this != &other) {
-      data = std::move(other.data);
+      base = std::move(other.base);
     }
     return *this;
   }
 
-  [[nodiscard]] Tensor operator+(const Tensor &other) const noexcept {
-    Tensor result;
-    for (int64_t i = 0; i < TShape::NELEMS; i++) {
-      result.data[i] = other.data[i] + this->data[i];
-    }
-    return result;
+  [[nodiscard]] inline Tensor operator+(const Tensor &other) const noexcept {
+    return {this->base + other.base};
   }
 
-  void operator+=(const Tensor &other) noexcept {
-    for (int64_t i = 0; i < TShape::NELEMS; i++) {
-      this->data[i] += other.data[i];
-    }
+  inline void operator+=(const Tensor &other) noexcept {
+    this->base += other.base;
   }
 
-  [[nodiscard]] Tensor operator-(const Tensor &other) const noexcept {
-    Tensor result;
-    for (int64_t i = 0; i < TShape::NELEMS; i++) {
-      result.data[i] = other.data[i] + this->data[i];
-    }
-    return result;
+  [[nodiscard]] inline Tensor operator-(const Tensor &other) const noexcept {
+    return {this->base - other.base};
   }
 
-  void operator-=(const Tensor &other) noexcept {
-    for (int64_t i = 0; i < TShape::NELEMS; i++) {
-      this->data[i] -= other.data[i];
-    }
+  inline void operator-=(const Tensor &other) noexcept {
+    this->base -= other.base;
   }
 
-  [[nodiscard]] Tensor operator*(const Tensor &other) const noexcept {
-    Tensor result;
-    for (int64_t i = 0; i < TShape::NELEMS; i++) {
-      result.data[i] = other.data[i] * this->data[i];
-    }
-    return result;
+  [[nodiscard]] inline Tensor operator*(const Tensor &other) const noexcept {
+    return {this->base * other.base};
   }
 
-  void operator*=(const Tensor &other) noexcept {
-    for (int64_t i = 0; i < TShape::NELEMS; i++) {
-      this->data[i] *= other.data[i];
-    }
-  }
+  void operator*=(const Tensor &other) noexcept { this->base *= other.base; }
 
   bool operator==(const Tensor &other) const noexcept {
-    for (int64_t i = 0; i < TShape::NELEMS; i++) {
-      if (this->data[i] != other.data[i]) {
-        return false;
-      }
-    }
-    return true;
+    return this->base.equal(other.base);
   }
 
   bool operator!=(const Tensor &other) const noexcept {
     return !(*this == other);
   }
 
-  void print() const {
-    for (int64_t i = 0; i < TShape::NELEMS; ++i) {
-      std::cout << data[i] << " ";
-    }
-    std::cout << std::endl;
+  void print() const { std::cout << this->base << std::endl; }
+
+  // Generators
+  inline static Tensor zeros() { return Tensor(); }
+  inline static Tensor ones() {
+    return Tensor(torch::ones(SHAPE_DIMS,
+                              torch::dtype(DTYPE).device(DEVICE, DEVICE_IDX)));
+  }
+  inline Tensor zeros_like() { return Tensor(); }
+  inline Tensor ones_like() { return Tensor::ones(); }
+  inline static Tensor from_torch_unchecked(torch::Tensor other) {
+    return Tensor(other);
   }
 
   // Reshape
@@ -1073,8 +1064,6 @@ public:
                   "\nShape mismatch: To reshape the shapes must have the same"
                   "number of elements.\n");
     Tensor<Shape<NewDims...>, TType, TDevice> result;
-    std::copy(this->data.get(), this->data.get() + TShape::NELEMS,
-              result.data.get());
     return result;
   }
 
@@ -1084,8 +1073,6 @@ public:
                   "\nShape mismatch: To reshape the shapes must have the same"
                   "number of elements.\n");
     Tensor<NewShape, TType, TDevice> result;
-    std::copy(this->data.get(), this->data.get() + TShape::NELEMS,
-              result.data.get());
     return result;
   }
 
@@ -1356,19 +1343,19 @@ public:
   }
 
   // to_dtype
-  template <typename DType = float>
-  [[nodiscard]] auto to_dtype() const -> Tensor<TShape, DType, TDevice> {
-    Tensor<TShape, DType, TDevice> result;
-    // TODO: Implementation with libtorch
-    return result;
+  template <typename DType = f32>
+  [[nodiscard]] auto to_dtype(bool async = false) const
+      -> Tensor<TShape, DType, TDevice> {
+    return Tensor<TShape, DType, TDevice>::from_torch_unchecked(
+        this->base.to(torch::dtype(dtype::DType<DType>::DTYPE), async));
   }
 
   // to_device
-  template <typename Device = CPU, int64_t DeviceIdx = 0>
-  [[nodiscard]] auto to_device() const -> Tensor<TShape, TType, Device> {
-    Tensor<TShape, TType, Device> result;
-    // TODO: Implementation with libtorch
-    return result;
+  template <typename Device = CPU<0>>
+  [[nodiscard]] auto to_device(bool async = false) const
+      -> Tensor<TShape, TType, Device> {
+    return Tensor<TShape, TType, Device>::from_torch_unchecked(this->base.to(
+        torch::TensorOptions().device(Device::DEVICE, Device::INDEX), async));
   }
 
   // Chunk
@@ -1453,8 +1440,6 @@ public:
   // aggregate operations over dims
 
   // generating like some other tensor:
-  // zeros_like
-  // ones_like
   // ...
 
   // libtorch ops like argmax, argmin, clamp...
@@ -1474,6 +1459,14 @@ public:
   // sampling distributions
   // math functions
 };
+
+///
+///
+///
+/// Associated methods
+///
+///
+///
 
 } // namespace evol
 

@@ -3,13 +3,15 @@
 using namespace evol;
 
 int main() {
-  Tensor<Shape<2, 3, 4>, f32, CPU> t;
+  auto t1 = Tensor<Shape<2, 3>>::zeros();
+  auto t2 = Tensor<Shape<3, 2>>::ones();
+  t1.print();
+  t2.print();
 
-  std::cout << "T.dim: " << t.base.dim() << std::endl;
-  for (size_t i = 0; i < t.DIMS; i++) {
-    std::cout << "T.size[" << i << "] = " << t.base.size(i) << std::endl;
-  }
+  auto t1_2 = t1.to_dtype<i32>();
+  auto t2_2 = t2.to_device<CPU<>>();
+  t1_2.print();
+  t2_2.print();
 
-  std::cout << t.base << std::endl;
   return 0;
 }
