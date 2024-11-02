@@ -21,8 +21,9 @@ namespace evol {
 ///
 namespace device {
 #define DEF_DEVICE(name, value)                                                \
-  struct name {                                                                \
+  template <int64_t N> struct name {                                           \
     static constexpr torch::DeviceType DEVICE = value;                         \
+    static constexpr int64_t INDEX = N;                                        \
   };
 
 DEF_DEVICE(CPU, torch::kCPU);
@@ -48,28 +49,27 @@ DEF_DEVICE(IDEEP, torch::DeviceType::IDEEP);
 DEF_DEVICE(MKLDNN, torch::DeviceType::MKLDNN);
 
 } // namespace device
-
-using CPU = device::CPU;
-using CUDA = device::CUDA;
-using HIP = device::HIP;
-using FPGA = device::FPGA;
-using MAIA = device::MAIA;
-using XLA = device::XLA;
-using MPS = device::MPS;
-using Meta = device::Meta;
-using Vulkan = device::Vulkan;
-using Metal = device::Metal;
-using XPU = device::XPU;
-using HPU = device::HPU;
-using VE = device::VE;
-using Lazy = device::Lazy;
-using IPU = device::IPU;
-using MTIA = device::MTIA;
-using PrivateUse1 = device::PrivateUse1;
-using OPENGL = device::OPENGL;
-using OPENCL = device::OPENCL;
-using IDEEP = device::IDEEP;
-using MKLDNN = device::MKLDNN;
+template <int64_t N = 0> using CPU = device::CPU<N>;
+template <int64_t N = 0> using CUDA = device::CUDA<N>;
+template <int64_t N = 0> using HIP = device::HIP<N>;
+template <int64_t N = 0> using FPGA = device::FPGA<N>;
+template <int64_t N = 0> using MAIA = device::MAIA<N>;
+template <int64_t N = 0> using XLA = device::XLA<N>;
+template <int64_t N = 0> using MPS = device::MPS<N>;
+template <int64_t N = 0> using Meta = device::Meta<N>;
+template <int64_t N = 0> using Vulkan = device::Vulkan<N>;
+template <int64_t N = 0> using Metal = device::Metal<N>;
+template <int64_t N = 0> using XPU = device::XPU<N>;
+template <int64_t N = 0> using HPU = device::HPU<N>;
+template <int64_t N = 0> using VE = device::VE<N>;
+template <int64_t N = 0> using Lazy = device::Lazy<N>;
+template <int64_t N = 0> using IPU = device::IPU<N>;
+template <int64_t N = 0> using MTIA = device::MTIA<N>;
+template <int64_t N = 0> using PrivateUse1 = device::PrivateUse1<N>;
+template <int64_t N = 0> using OPENGL = device::OPENGL<N>;
+template <int64_t N = 0> using OPENCL = device::OPENCL<N>;
+template <int64_t N = 0> using IDEEP = device::IDEEP<N>;
+template <int64_t N = 0> using MKLDNN = device::MKLDNN<N>;
 
 ///
 ///
@@ -960,7 +960,7 @@ template <typename S, int64_t Height, int64_t Width> struct PadShape {
 ///
 ///
 
-template <typename TShape, typename TType = f32, typename TDevice = CPU>
+template <typename TShape, typename TType = f32, typename TDevice = CPU<0>>
 class Tensor {
 private:
   std::unique_ptr<TType[]> data;
@@ -983,9 +983,8 @@ public:
   // Constructors
 
   Tensor()
-      : base(torch::zeros(
-            SHAPE_VEC, torch::TensorOptions().dtype(DTYPE).device(DEVICE, 0))) {
-  }
+      : base(torch::zeros(SHAPE_VEC, torch::TensorOptions().dtype(DTYPE).device(
+                                         DEVICE, TDevice::INDEX))) {}
   explicit Tensor(const Tensor &other) : base(other->base) {}
   explicit Tensor(Tensor &&other) : base(other->base) {}
 
@@ -1356,14 +1355,14 @@ public:
 
   // to_dtype
   template <typename DType = float>
-  [[nodiscard]] auto to_dtype() const -> Tensor<TShape, DType> {
-    Tensor<TShape, DType> result;
+  [[nodiscard]] auto to_dtype() const -> Tensor<TShape, DType, TDevice> {
+    Tensor<TShape, DType, TDevice> result;
     // TODO: Implementation with libtorch
     return result;
   }
 
   // to_device
-  template <typename Device = CPU>
+  template <typename Device = CPU<0>>
   [[nodiscard]] auto to_device() const -> Tensor<TShape, TType, Device> {
     Tensor<TShape, TType, Device> result;
     // TODO: Implementation with libtorch
