@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ATen/core/TensorBase.h>
 #include <ATen/ops/stack.h>
 #ifndef TENSOR_H
 #define TENSOR_H
@@ -46,6 +47,7 @@ DEF_DEVICE(OPENGL, torch::DeviceType::OPENGL, 1);
 DEF_DEVICE(OPENCL, torch::DeviceType::OPENCL, 1);
 DEF_DEVICE(IDEEP, torch::DeviceType::IDEEP, 1);
 DEF_DEVICE(MKLDNN, torch::DeviceType::MKLDNN, 1);
+#undef DEF_DEVICE
 
 } // namespace device
 template <int64_t N = 0> using CPU = device::CPU<N>;
@@ -117,6 +119,7 @@ DEF_DTYPE(bits16, kBits16, 2);
 DEF_DTYPE(bits2x4, kBits2x4, 1);
 DEF_DTYPE(bits4x2, kBits4x2, 1);
 DEF_DTYPE(bits1x8, kBits1x8, 1);
+#undef DEF_DTYPE
 
 template <typename T> struct alignas(sizeof(T)) DType;
 
@@ -163,6 +166,7 @@ DEF_DTYPE_IMPL(bits16);
 DEF_DTYPE_IMPL(bits2x4);
 DEF_DTYPE_IMPL(bits4x2);
 DEF_DTYPE_IMPL(bits1x8);
+#undef DEF_DTYPE_IMPL
 
 DEF_DTYPE_IMPL_BASE(bool, kBool);
 DEF_DTYPE_IMPL_BASE(char, kChar);
@@ -182,6 +186,7 @@ DEF_DTYPE_IMPL_BASE(double, kDouble);
 DEF_DTYPE_IMPL_BASE(long double, kLong);
 DEF_DTYPE_IMPL_BASE(long long, kLong);
 DEF_DTYPE_IMPL_BASE(unsigned long long, kLong);
+#undef DEF_DTYPE_IMPL_BASE
 
 }; // namespace dtype
 
@@ -968,7 +973,7 @@ template <typename S, int64_t Height, int64_t Width> struct PadShape {
 ///
 
 template <typename TShape, typename TType = f32, typename TDevice = CPU<0>>
-class Tensor {
+class Tensor : public at::TensorBase {
 private:
   // This cannot be checked at comptime so it's declared as private
   Tensor(torch::Tensor base) : base(base) {}
