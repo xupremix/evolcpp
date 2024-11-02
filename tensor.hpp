@@ -1,5 +1,7 @@
 #pragma once
 
+#include <c10/core/ScalarType.h>
+#include <cstdint>
 #ifndef TENSOR_H
 #define TENSOR_H
 
@@ -65,6 +67,11 @@ template <typename T> struct DType;
     static constexpr torch::Dtype DTYPE = name::DTYPE;                         \
   };
 
+#define DEF_DTYPE_IMPL_BASE(name, val)                                         \
+  template <> struct DType<name> {                                             \
+    static constexpr torch::Dtype DTYPE = torch::val;                          \
+  };
+
 DEF_DTYPE_IMPL(i8);
 DEF_DTYPE_IMPL(i16);
 DEF_DTYPE_IMPL(i32);
@@ -96,9 +103,24 @@ DEF_DTYPE_IMPL(bits2x4);
 DEF_DTYPE_IMPL(bits4x2);
 DEF_DTYPE_IMPL(bits1x8);
 
-// bool / char
+DEF_DTYPE_IMPL_BASE(bool, kBool);
+DEF_DTYPE_IMPL_BASE(char, kChar);
 
-} // namespace dtype
+DEF_DTYPE_IMPL_BASE(int, kInt);
+DEF_DTYPE_IMPL_BASE(int8_t, kInt8);
+DEF_DTYPE_IMPL_BASE(int16_t, kInt16);
+DEF_DTYPE_IMPL_BASE(int64_t, kInt64);
+
+DEF_DTYPE_IMPL_BASE(unsigned int, kUInt32);
+DEF_DTYPE_IMPL_BASE(uint8_t, kUInt8);
+DEF_DTYPE_IMPL_BASE(uint16_t, kUInt16);
+DEF_DTYPE_IMPL_BASE(uint64_t, kUInt64);
+
+DEF_DTYPE_IMPL_BASE(float, kFloat);
+DEF_DTYPE_IMPL_BASE(double, kDouble);
+DEF_DTYPE_IMPL_BASE(long double, kLong);
+
+}; // namespace dtype
 
 using i8 = dtype::i8;
 using i16 = dtype::i16;
