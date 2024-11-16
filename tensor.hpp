@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ATen/core/TensorBase.h>
-#include <ATen/ops/stack.h>
 #ifndef TENSOR_H
 #define TENSOR_H
 
@@ -27,50 +25,50 @@ namespace device {
   };
 
 DEF_DEVICE(CPU, torch::kCPU, 0);
-DEF_DEVICE(CUDA, torch::kCUDA, 1);
-DEF_DEVICE(HIP, torch::kHIP, 1);
-DEF_DEVICE(FPGA, torch::kFPGA, 1);
-DEF_DEVICE(MAIA, torch::kMAIA, 1);
-DEF_DEVICE(XLA, torch::kXLA, 1);
-DEF_DEVICE(MPS, torch::kMPS, 1);
-DEF_DEVICE(Meta, torch::kMeta, 1);
-DEF_DEVICE(Vulkan, torch::kVulkan, 1);
-DEF_DEVICE(Metal, torch::kMetal, 1);
-DEF_DEVICE(XPU, torch::kXPU, 1);
-DEF_DEVICE(HPU, torch::kHPU, 1);
-DEF_DEVICE(VE, torch::kVE, 1);
-DEF_DEVICE(Lazy, torch::kLazy, 1);
-DEF_DEVICE(IPU, torch::kIPU, 1);
-DEF_DEVICE(MTIA, torch::kMTIA, 1);
-DEF_DEVICE(PrivateUse1, torch::kPrivateUse1, 1);
-DEF_DEVICE(OPENGL, torch::DeviceType::OPENGL, 1);
-DEF_DEVICE(OPENCL, torch::DeviceType::OPENCL, 1);
-DEF_DEVICE(IDEEP, torch::DeviceType::IDEEP, 1);
-DEF_DEVICE(MKLDNN, torch::DeviceType::MKLDNN, 1);
+DEF_DEVICE(CUDA, torch::kCUDA, 0);
+DEF_DEVICE(HIP, torch::kHIP, 0);
+DEF_DEVICE(FPGA, torch::kFPGA, 0);
+DEF_DEVICE(MAIA, torch::kMAIA, 0);
+DEF_DEVICE(XLA, torch::kXLA, 0);
+DEF_DEVICE(MPS, torch::kMPS, 0);
+DEF_DEVICE(Meta, torch::kMeta, 0);
+DEF_DEVICE(Vulkan, torch::kVulkan, 0);
+DEF_DEVICE(Metal, torch::kMetal, 0);
+DEF_DEVICE(XPU, torch::kXPU, 0);
+DEF_DEVICE(HPU, torch::kHPU, 0);
+DEF_DEVICE(VE, torch::kVE, 0);
+DEF_DEVICE(Lazy, torch::kLazy, 0);
+DEF_DEVICE(IPU, torch::kIPU, 0);
+DEF_DEVICE(MTIA, torch::kMTIA, 0);
+DEF_DEVICE(PrivateUse1, torch::kPrivateUse1, 0);
+DEF_DEVICE(OPENGL, torch::DeviceType::OPENGL, 0);
+DEF_DEVICE(OPENCL, torch::DeviceType::OPENCL, 0);
+DEF_DEVICE(IDEEP, torch::DeviceType::IDEEP, 0);
+DEF_DEVICE(MKLDNN, torch::DeviceType::MKLDNN, 0);
 #undef DEF_DEVICE
 
 } // namespace device
 template <int64_t N = 0> using CPU = device::CPU<N>;
-template <int64_t N = 1> using CUDA = device::CUDA<N>;
-template <int64_t N = 1> using HIP = device::HIP<N>;
-template <int64_t N = 1> using FPGA = device::FPGA<N>;
-template <int64_t N = 1> using MAIA = device::MAIA<N>;
-template <int64_t N = 1> using XLA = device::XLA<N>;
-template <int64_t N = 1> using MPS = device::MPS<N>;
-template <int64_t N = 1> using Meta = device::Meta<N>;
-template <int64_t N = 1> using Vulkan = device::Vulkan<N>;
-template <int64_t N = 1> using Metal = device::Metal<N>;
-template <int64_t N = 1> using XPU = device::XPU<N>;
-template <int64_t N = 1> using HPU = device::HPU<N>;
-template <int64_t N = 1> using VE = device::VE<N>;
-template <int64_t N = 1> using Lazy = device::Lazy<N>;
-template <int64_t N = 1> using IPU = device::IPU<N>;
-template <int64_t N = 1> using MTIA = device::MTIA<N>;
-template <int64_t N = 1> using PrivateUse1 = device::PrivateUse1<N>;
-template <int64_t N = 1> using OPENGL = device::OPENGL<N>;
-template <int64_t N = 1> using OPENCL = device::OPENCL<N>;
-template <int64_t N = 1> using IDEEP = device::IDEEP<N>;
-template <int64_t N = 1> using MKLDNN = device::MKLDNN<N>;
+template <int64_t N = 0> using CUDA = device::CUDA<N>;
+template <int64_t N = 0> using HIP = device::HIP<N>;
+template <int64_t N = 0> using FPGA = device::FPGA<N>;
+template <int64_t N = 0> using MAIA = device::MAIA<N>;
+template <int64_t N = 0> using XLA = device::XLA<N>;
+template <int64_t N = 0> using MPS = device::MPS<N>;
+template <int64_t N = 0> using Meta = device::Meta<N>;
+template <int64_t N = 0> using Vulkan = device::Vulkan<N>;
+template <int64_t N = 0> using Metal = device::Metal<N>;
+template <int64_t N = 0> using XPU = device::XPU<N>;
+template <int64_t N = 0> using HPU = device::HPU<N>;
+template <int64_t N = 0> using VE = device::VE<N>;
+template <int64_t N = 0> using Lazy = device::Lazy<N>;
+template <int64_t N = 0> using IPU = device::IPU<N>;
+template <int64_t N = 0> using MTIA = device::MTIA<N>;
+template <int64_t N = 0> using PrivateUse1 = device::PrivateUse1<N>;
+template <int64_t N = 0> using OPENGL = device::OPENGL<N>;
+template <int64_t N = 0> using OPENCL = device::OPENCL<N>;
+template <int64_t N = 0> using IDEEP = device::IDEEP<N>;
+template <int64_t N = 0> using MKLDNN = device::MKLDNN<N>;
 
 ///
 ///
@@ -1086,9 +1084,8 @@ public:
   [[nodiscard]] auto
   matmul(Tensor<NewShape, TType, TDevice> &other) const noexcept
       -> Tensor<typename MatmulShape<TShape, NewShape>::type, TType, TDevice> {
-    Tensor<typename MatmulShape<TShape, NewShape>::type, TType, TDevice> result;
-    // TODO: Implementation with libtorch
-    return result;
+    return Tensor<typename MatmulShape<TShape, NewShape>::type, TType,
+                  TDevice>::from_torch_unchecked(this->base.matmul(other.base));
   };
 
   // Stack

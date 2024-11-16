@@ -1,14 +1,14 @@
 #include "tensor.hpp"
-#include <ATen/ops/zeros.h>
 
 using namespace evol;
 
 int main() {
 
-  torch::Tensor t = torch::ones({2, 3});
-  at::Tensor a = at::ones({2, 3});
-  auto ris = a + t;
-  std::cout << ris << std::endl;
+  auto t1 = Tensor<Shape<1, 2, 3>, f32, CUDA<>>::ones();
+  auto t2 = Tensor<Shape<1, 3, 4>, f32, CUDA<>>::ones();
+  auto t3 = t1.matmul(t2);
+
+  t3.print();
 
   return 0;
 }
